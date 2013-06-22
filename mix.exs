@@ -13,12 +13,8 @@ defmodule Migrations.Mixfile do
   end
 
   defp deps do
-    deps(Mix.env)
+    [
+      {:exdbi, github: "exdbi/exdbi"},
+    ]
   end
-  defp deps(:test) do
-   [
-     {:epgsql, github: "wg/epgsql"},
-   ]
-  end
-  defp deps(_), do: []
 end
