@@ -7,9 +7,14 @@ defmodule Migrations do
   It is important to preserve the order of ups and downs throughout the
   lifetime of the module.
 
+  `use Migrations` accepts following options:
+
+  * `prefix`: by default, prefix is assumed to be `__MODULE__`, but
+    can be overriden with this option
+
   See documentation for `up` and `down` macros.
 
-  ## Example
+  ## Examples
 
     defmodule MyMigrations do
       use Migrations
@@ -21,15 +26,32 @@ defmodule Migrations do
         # ...
       end
     end
+
+    defmodule MyOtherMigrations do
+      use Migrations, prefix: MyMigrations
+
+      up "first migration" do
+        # ...
+      end
+      down do
+        # ...
+      end
+    end
+
   """
 
   defrecord Migration, id: nil, timestamp: nil
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
     quote do
       import Migrations
       Module.register_attribute __MODULE__, :migrations, persist: true, accumulate: true
       @before_compile Migrations
+      prefix = unquote(opts[:prefix]) || __MODULE__
+      unless is_binary(prefix) do
+        prefix = inspect(prefix)
+      end
+      @prefix prefix
     end
   end
 
@@ -59,11 +81,12 @@ defmodule Migrations do
   """
   defmacro up(name, state // (quote do: _state), body) do
     quote do
-      if Enum.member?(@migrations, unquote(name)) do
-        raise ArgumentError, message: "upgrade '#{unquote(name)}' already exists"
+      name = "#{@prefix}: #{unquote(name)}"
+      if Enum.member?(@migrations, name) do
+        raise ArgumentError, message: "upgrade '#{name}' already exists"
       end
       def upgrade(unquote(name), unquote(state)), unquote(body)
-      @migrations unquote(name)
+      @migrations name
       @current_migration nil
     end
   end
@@ -109,20 +132,22 @@ defmodule Migrations do
 
   defmacro down(name, body) when is_binary(name) do
     quote do
+      name = "#{@prefix}: #{unquote(name)}"
       unless nil?(@current_migration) do
         raise ArgumentError, message: "downgrade '#{@current_migration}' already exists"
       end
-      @current_migration unquote(name)
+      @current_migration name
       def downgrade(unquote(name), _state), unquote(body)
     end
   end
 
   defmacro down(name, state, body) do
     quote do
+      name = "#{@prefix}: #{unquote(name)}"
       unless nil?(@current_migration) do
         raise ArgumentError, message: "downgrade '#{@current_migration}' already exists"
       end
-      @current_migration unquote(name)
+      @current_migration name
       def downgrade(unquote(name), unquote(state)), unquote(body)
     end
   end

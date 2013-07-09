@@ -20,7 +20,7 @@ defmodule MigrationsTest do
   end
 
   defmodule M1 do
-    use Migrations
+    use Migrations, prefix: MigrationsTest.M
 
     up "first table", do: nil
 
@@ -40,7 +40,8 @@ defmodule MigrationsTest do
   test "list migrations" do
     assert Migrations.all(M) ==
       Enum.map(["first table", "second table", "third table",
-                "fourth table"], fn(id) -> Migrations.Migration.new(id: id) end)
+                "fourth table"],
+                fn(id) -> Migrations.Migration.new(id: "MigrationsTest.M: #{id}") end)
   end
 
   test "fail on duplicate upgrades" do
@@ -50,7 +51,7 @@ defmodule MigrationsTest do
       up "migration", do: nil
       up "migration", do: nil
     end
-    assert_raise ArgumentError, "upgrade 'migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
+    assert_raise ArgumentError, "upgrade 'Test: migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
     :code.delete(Test) ; :code.purge(Test)
   end
 
@@ -62,7 +63,7 @@ defmodule MigrationsTest do
       down do: nil
       down do: nil
     end
-    assert_raise ArgumentError, "downgrade 'migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
+    assert_raise ArgumentError, "downgrade 'Test: migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
     :code.delete(Test) ; :code.purge(Test)
   end
 
@@ -74,7 +75,7 @@ defmodule MigrationsTest do
       down "migration", do: nil
       down "migration", do: nil
     end
-    assert_raise ArgumentError, "downgrade 'migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
+    assert_raise ArgumentError, "downgrade 'Test: migration' already exists", fn -> Module.create Test, quoted, __ENV__ end
     :code.delete(Test) ; :code.purge(Test)
   end
 
@@ -93,7 +94,7 @@ defmodule MigrationsTest do
     t = Migrations.ETS.create
     assert Migrations.migrate(M, t) == {:upgrade, Migrations.all(M)}
     assert Migrations.migrate(M1, t) == {:upgrade, Migrations.all(M1) -- Migrations.all(M)}
-    assert Migrations.migrate(M1, "fourth table", t) == {:downgrade, Enum.reverse(Migrations.all(M1) -- Migrations.all(M))}
+    assert Migrations.migrate(M1, "MigrationsTest.M: fourth table", t) == {:downgrade, Enum.reverse(Migrations.all(M1) -- Migrations.all(M))}
   end
 
 end
