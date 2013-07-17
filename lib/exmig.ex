@@ -82,10 +82,11 @@ defmodule Migrations do
   defmacro up(name, state // (quote do: _state), body) do
     quote do
       name = "#{@prefix}: #{unquote(name)}"
+      @name name
       if Enum.member?(@migrations, name) do
         raise ArgumentError, message: "upgrade '#{name}' already exists"
       end
-      def upgrade(unquote(name), unquote(state)), unquote(body)
+      def upgrade(@name, unquote(state)), unquote(body)
       @migrations name
       @current_migration nil
     end
@@ -133,22 +134,24 @@ defmodule Migrations do
   defmacro down(name, body) when is_binary(name) do
     quote do
       name = "#{@prefix}: #{unquote(name)}"
+      @name name
       unless nil?(@current_migration) do
         raise ArgumentError, message: "downgrade '#{@current_migration}' already exists"
       end
       @current_migration name
-      def downgrade(unquote(name), _state), unquote(body)
+      def downgrade(@name, _state), unquote(body)
     end
   end
 
   defmacro down(name, state, body) do
     quote do
       name = "#{@prefix}: #{unquote(name)}"
+      @name name
       unless nil?(@current_migration) do
         raise ArgumentError, message: "downgrade '#{@current_migration}' already exists"
       end
       @current_migration name
-      def downgrade(unquote(name), unquote(state)), unquote(body)
+      def downgrade(@name, unquote(state)), unquote(body)
     end
   end
 

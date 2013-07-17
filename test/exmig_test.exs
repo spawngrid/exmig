@@ -6,7 +6,10 @@ defmodule MigrationsTest do
   defmodule M do
     use Migrations
 
-    up "first table", do: nil
+    up "first table" do
+      :ets.new(:test_table, [:public, :named_table])
+      :ets.insert(:test_table, {:test, :passed})
+    end
 
     up "second table", do: nil
     down do: nil
@@ -82,6 +85,7 @@ defmodule MigrationsTest do
   test "full upgrade" do
     t = Migrations.ETS.create
     assert Migrations.migrate(M, t) == {:upgrade, Migrations.all(M)}
+    assert [{:test, :passed}] = :ets.lookup(:test_table, :test)
   end
 
   test "partial upgrade" do
