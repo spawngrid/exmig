@@ -1,5 +1,17 @@
 defimpl Migration.DBI.SQL, for: DBI.PostgreSQL do
 
+  def begin(_) do
+    {"SAVEPOINT exmig", []}
+  end
+
+  def commit(_) do
+    {"RELEASE SAVEPOINT exmig", []}
+  end
+
+  def rollback(_) do
+    {"ROLLBACK TO exmig", []}
+  end
+
   def init(_, Migrations.DBI[table: table]) do
     {""", []}
        CREATE TABLE IF NOT EXISTS #{table} (

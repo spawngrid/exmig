@@ -200,7 +200,7 @@ defmodule Migrations do
   end
 
 
-  defp migration_path(module, instance) do
+  def migration_path(module, instance) do
     last_version = all(module) |> Enum.reverse |> Enum.first
     case last_version do
       nil -> :up_to_date
@@ -209,7 +209,7 @@ defmodule Migrations do
     end
   end
 
-  defp migration_path(module, version, instance) do
+  def migration_path(module, version, instance) do
     instance = I.init(instance)
     migrations = Enum.drop_while(Enum.reverse(all(module)), fn(x) -> x.id != version end) |>
                  Enum.reverse

@@ -1,8 +1,17 @@
-defrecord Migrations.DBI, for: nil, table: "migrations"
+defrecord Migrations.DBI, for: nil, table: "migrations", transact: true
 
 defprotocol Migration.DBI.SQL do
   @type t
   @type result :: {DBI.statement, DBI.bindings}
+
+  @spec begin(t) :: result
+  def begin(t)
+
+  @spec commit(t) :: result
+  def commit(t)
+
+  @spec rollback(t) :: result
+  def rollback(t)
 
   @spec init(t, Migrations.DBI.t) :: result
   def init(t, dbi)
@@ -47,13 +56,25 @@ defimpl Migrations.Implementation, for: Migrations.DBI do
     :ok
   end
 
-  def execute!(T[for: for], m,f,a) do
-    DBI.query!(for, "BEGIN")
+  def execute!(T[for: for, transact: transact], m,f,a) do
+    if transact do
+      DBI.query!(for, "BEGIN")
+    end
+    {query, bindings} = Migration.DBI.SQL.begin(for)
+    DBI.query!(for, query, bindings)
     try do
       apply(m,f,a)
-      DBI.query!(for, "COMMIT")
+      {query, bindings} = Migration.DBI.SQL.commit(for)
+      DBI.query!(for, query, bindings)
+      if transact do
+        DBI.query!(for, "COMMIT")
+      end
     rescue e ->
-      DBI.query!(for, "ROLLBACK")
+      {query, bindings} = Migration.DBI.SQL.rollback(for)
+      DBI.query!(for, query, bindings)
+      if transact do
+        DBI.query!(for, "ROLLBACK")
+      end
       raise(e)
     end
   end

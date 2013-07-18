@@ -18,9 +18,6 @@ defmodule SampleMigrations do
     DBI.query!(db, "DROP TABLE users")
   end
 
-  up "drop users", I[for: db] do
-    downgrade("users table", db)
-  end
 end
 
-Migrations.migrate SampleMigrations, Migrations.DBI.new(for: db)
+IO.inspect Migrations.migrate SampleMigrations, Migrations.DBI.new(for: db)
