@@ -22,6 +22,25 @@ defmodule MigrationsTest do
 
   end
 
+  defmodule M0 do
+    use Migrations
+
+    up "first table", do: nil
+
+    up "second table", do: nil
+    down do: nil
+
+    up "third table", do: nil
+    down "third table", do: nil
+
+    up "fourth table", state, do: state
+    down state, do: state
+
+    up "fifth table", do: nil
+    up "sixth table", do: nil
+
+  end
+
   defmodule M1 do
     use Migrations, prefix: MigrationsTest.M
 
@@ -86,6 +105,12 @@ defmodule MigrationsTest do
     t = Migrations.ETS.create
     assert Migrations.migrate(M, t) == {:upgrade, Migrations.all(M)}
     assert [{:test, :passed}] = :ets.lookup(:test_table, :test)
+  end
+
+  test "full independent upgrade" do
+    t = Migrations.ETS.create
+    assert Migrations.migrate(M, t) == {:upgrade, Migrations.all(M)}
+    assert Migrations.migrate(M0, t) == {:upgrade, Migrations.all(M0)}
   end
 
   test "partial upgrade" do
