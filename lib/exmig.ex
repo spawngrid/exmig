@@ -46,6 +46,8 @@ defmodule Migrations do
     quote do
       import Migrations
       Module.register_attribute __MODULE__, :migrations, persist: true, accumulate: true
+      Module.register_attribute __MODULE__, :migration_options, persist: true, accumulate: false
+      @migration_options unquote(opts)
       @before_compile Migrations
       prefix = unquote(opts[:prefix]) || __MODULE__
       unless is_binary(prefix) do
@@ -236,6 +238,11 @@ defmodule Migrations do
         end
     end
     {instance, result}
+  end
+
+  @spec options(module) :: [{term, term}]
+  def options(module) do
+    module.__info__(:attributes)[:migration_options]
   end
 
 end

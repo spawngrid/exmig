@@ -126,4 +126,13 @@ defmodule MigrationsTest do
     assert Migrations.migrate(M1, "MigrationsTest.M: fourth table", t) == {:downgrade, Enum.reverse(Migrations.all(M1) -- Migrations.all(M))}
   end
 
+  defmodule Extra do
+    use Migrations, some_option: 1, another_option: 2
+  end
+
+  test "extra options" do
+    assert Migrations.options(Extra) == [some_option: 1, another_option: 2]
+  end
+
+
 end
