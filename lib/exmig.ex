@@ -218,7 +218,7 @@ defmodule Migrations do
     migrations = Enum.drop_while(Enum.reverse(all(module)), fn(x) -> x.id != version end) |>
                  Enum.reverse
     current_migrations = I.migrations(instance) |>
-                         Enum.filter(fn(m) -> String.starts_with?(m.id, module.__prefix__) end) |>
+                         Enum.filter(fn(m) -> String.starts_with?(m.id, module.__prefix__ <> ": ") end) |>
                          Enum.sort(fn(x, y) -> x.timestamp > y.timestamp end) |>
                          Enum.map(fn(x) -> x.id end)
     result =
