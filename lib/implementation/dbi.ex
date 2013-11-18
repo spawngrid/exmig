@@ -70,12 +70,13 @@ defimpl Migrations.Implementation, for: Migrations.DBI do
         DBI.query!(for, "COMMIT")
       end
     rescue e ->
+      stacktrace = System.stacktrace
       {query, bindings} = Migration.DBI.SQL.rollback(for)
       DBI.query!(for, query, bindings)
       if transact do
         DBI.query!(for, "ROLLBACK")
       end
-      raise(e)
+      raise(e, [], stacktrace)
     end
   end
 
