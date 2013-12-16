@@ -1,1 +1,1 @@
-[ "exdbi": {:git, "git://github.com/exdbi/exdbi.git", "e48dde3197880aa1c4df76c1ba02ea1e9b1b2ca8", []} ]
+[ "exdbi": {:git, "git://github.com/exdbi/exdbi.git", "f4ea6095f213ea25be98f11cf23b438802bf2741", []} ]
